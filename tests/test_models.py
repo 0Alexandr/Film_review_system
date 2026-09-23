@@ -8,31 +8,48 @@ from models import FilmReviewSystem, Movie, Review, User
 def test_movie_average_rating() -> None:
     movie = Movie(
         movie_id=1,
-        title="Интерстеллар",
+        title="Interstellar",
         year=2014,
-        genre="Фантастика",
-        director="Кристофер Нолан",
-        reviews=[
-            Review(1, 1, 1, 10, "Отлично"),
-            Review(2, 1, 2, 8, "Хорошо"),
-        ],
+        genre="Sci-Fi",
+        director="Christopher Nolan",
     )
+    first_user = User(1, "Alex")
+    second_user = User(2, "Marina")
+    movie.reviews = [
+        Review(1, movie, first_user, 10, "Excellent"),
+        Review(2, movie, second_user, 8, "Good"),
+    ]
 
     assert movie.average_rating == 9.0
 
 
 def test_review_rating_validation() -> None:
+    movie = Movie(1, "Interstellar", 2014, "Sci-Fi", "Christopher Nolan")
+    user = User(1, "Alex")
+
     with pytest.raises(ValueError):
-        Review(1, 1, 1, 11, "Некорректная оценка")
+        Review(1, movie, user, 11, "Invalid rating")
+
+
+def test_review_links_movie_and_user_instances() -> None:
+    movie = Movie(1, "Matrix", 1999, "Sci-Fi", "Wachowski")
+    user = User(1, "Alex", date(2026, 9, 22))
+    review = Review(1, movie, user, 9, "Strong film")
+
+    assert review.movie is movie
+    assert review.user is user
+    assert review.movie_id == movie.movie_id
+    assert review.user_id == user.user_id
 
 
 def test_system_add_review_links_movie_and_user() -> None:
-    system = FilmReviewSystem(
-        movies=[Movie(1, "Матрица", 1999, "Фантастика", "Вачовски")],
-        users=[User(1, "Алексей", date(2026, 9, 22))],
-    )
+    movie = Movie(1, "Matrix", 1999, "Sci-Fi", "Wachowski")
+    user = User(1, "Alex", date(2026, 9, 22))
+    system = FilmReviewSystem(movies=[movie], users=[user])
 
-    review = system.add_review(1, 1, 9, "Сильный фильм")
+    review = system.add_review(movie, user, 9, "Strong film")
 
     assert review in system.reviews
     assert review in system.get_movie(1).reviews
+    assert review.movie is movie
+    assert review.user is user

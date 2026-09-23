@@ -13,23 +13,23 @@ REVIEWS_FILE = DATA_DIR / "reviews.json"
 
 
 def load_json(filename: Path) -> list[dict]:
-    """Загрузить список словарей из JSON-файла."""
+    """Load a list of dictionaries from a JSON file."""
     try:
         with filename.open("r", encoding="utf-8") as file:
             data = json.load(file)
     except FileNotFoundError:
         return []
     except json.JSONDecodeError as error:
-        message = f"Файл {filename} содержит некорректный JSON."
+        message = f"File {filename} contains invalid JSON."
         raise ValueError(message) from error
 
     if not isinstance(data, list):
-        raise ValueError(f"Файл {filename} должен содержать список.")
+        raise ValueError(f"File {filename} must contain a list.")
     return data
 
 
 def save_json(filename: Path, data: list[dict]) -> None:
-    """Сохранить список словарей в JSON-файл."""
+    """Save a list of dictionaries to a JSON file."""
     filename.parent.mkdir(parents=True, exist_ok=True)
     with filename.open("w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
@@ -40,20 +40,28 @@ def load_system(
     users_file: Path = USERS_FILE,
     reviews_file: Path = REVIEWS_FILE,
 ) -> FilmReviewSystem:
-    """Загрузить JSON-данные и преобразовать их в объекты."""
-    reviews = [Review.from_dict(item) for item in load_json(reviews_file)]
-    movies = [
-        Movie.from_dict(
-            item,
-            reviews=[
-                review
-                for review in reviews
-                if review.movie_id == int(item["movie_id"])
-            ],
-        )
-        for item in load_json(movies_file)
-    ]
+    """Load JSON data and convert it into connected model objects."""
     users = [User.from_dict(item) for item in load_json(users_file)]
+    movies = [Movie.from_dict(item) for item in load_json(movies_file)]
+    movies_by_id = {movie.movie_id: movie for movie in movies}
+    users_by_id = {user.user_id: user for user in users}
+    reviews = []
+
+    for item in load_json(reviews_file):
+        movie_id = int(item["movie_id"])
+        user_id = int(item["user_id"])
+        if movie_id not in movies_by_id:
+            raise ValueError(f"Movie id={movie_id} for review not found.")
+        if user_id not in users_by_id:
+            raise ValueError(f"User id={user_id} for review not found.")
+        reviews.append(
+            Review.from_dict(
+                item,
+                movie=movies_by_id[movie_id],
+                user=users_by_id[user_id],
+            )
+        )
+
     return FilmReviewSystem(movies=movies, users=users, reviews=reviews)
 
 
@@ -63,7 +71,7 @@ def save_system(
     users_file: Path = USERS_FILE,
     reviews_file: Path = REVIEWS_FILE,
 ) -> None:
-    """Сохранить объекты системы в JSON-файлы."""
+    """Save system objects to JSON files."""
     save_json(movies_file, [movie.to_dict() for movie in system.movies])
     save_json(users_file, [user.to_dict() for user in system.users])
     save_json(reviews_file, [review.to_dict() for review in system.reviews])

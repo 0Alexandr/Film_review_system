@@ -30,15 +30,15 @@ def create_demo_system() -> FilmReviewSystem:
     marina = system.add_user("Марина")
 
     system.add_review(
-        movie_id=interstellar.movie_id,
-        user_id=alexey.user_id,
+        movie=interstellar,
+        user=alexey,
         rating=10,
         text="Сильная научная фантастика с эмоциональным финалом.",
         recommended=True,
     )
     system.add_review(
-        movie_id=parasite.movie_id,
-        user_id=marina.user_id,
+        movie=parasite,
+        user=marina,
         rating=9,
         text="Остроумная и напряженная социальная драма.",
         recommended=True,
