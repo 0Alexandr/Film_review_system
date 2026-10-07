@@ -13,6 +13,22 @@ def find_movies(movies: list[Movie], query: str) -> list[Movie]:
     ]
 
 
+def find_movie_by_id(movies: list[Movie], movie_id: int) -> Movie | None:
+    """Найти фильм по идентификатору."""
+    for movie in movies:
+        if movie.movie_id == movie_id:
+            return movie
+    return None
+
+
+def find_review_by_id(reviews: list[Review], review_id: int) -> Review | None:
+    """Найти отзыв по идентификатору."""
+    for review in reviews:
+        if review.review_id == review_id:
+            return review
+    return None
+
+
 def filter_movies_by_genre(movies: list[Movie], genre: str) -> list[Movie]:
     """Отобрать фильмы указанного жанра."""
     return [movie for movie in movies if movie.has_genre(genre)]

@@ -1,7 +1,9 @@
 from models import Movie, Review, User
 from services import (
     filter_movies_by_genre,
+    find_movie_by_id,
     find_movies,
+    find_review_by_id,
     get_rating_statistics,
     sort_movies_by_rating,
 )
@@ -41,6 +43,16 @@ def test_filter_movies_by_genre() -> None:
 
     assert len(result) == 1
     assert result[0].title == "Interstellar"
+
+
+def test_find_movie_and_review_by_id() -> None:
+    movies = make_movies()
+    reviews = movies[0].reviews + movies[1].reviews
+
+    assert find_movie_by_id(movies, 2).title == "Parasite"
+    assert find_movie_by_id(movies, 999) is None
+    assert find_review_by_id(reviews, 1).text == "Excellent"
+    assert find_review_by_id(reviews, 999) is None
 
 
 def test_sort_movies_by_rating() -> None:

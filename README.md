@@ -2,6 +2,51 @@
 
 КиноОтзыв - Python-проект для хранения фильмов, пользователей, оценок и текстовых отзывов.
 
+## Практическая работа 5: Django
+
+В проект добавлена Django-часть без удаления кода предыдущей практической
+работы. Django использует существующие JSON-файлы и классы проекта.
+
+Что добавлено:
+
+- Django-проект `filmreviews`;
+- приложение `homepage` с главной страницей `/` и пользовательской 404;
+- приложение `catalog` со страницами `/movies/` и `/movies/<id>/`;
+- приложение `reviews` со страницами `/reviews/` и `/reviews/<id>/`;
+- тесты страниц в `tests.py` каждого Django-приложения;
+- функции `find_movie_by_id()` и `find_review_by_id()` в `services.py`.
+
+Настройки Django:
+
+- язык: `ru-RU`;
+- часовой пояс: `Europe/Moscow`;
+- `ALLOWED_HOSTS`: `127.0.0.1`, `localhost`, `testserver`;
+- подключен обработчик `handler404`.
+
+Запуск Django-проекта:
+
+```bash
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py check
+python manage.py test
+python manage.py runserver
+```
+
+После запуска откройте:
+
+- `http://127.0.0.1:8000/`;
+- `http://127.0.0.1:8000/movies/`;
+- `http://127.0.0.1:8000/movies/1/`;
+- `http://127.0.0.1:8000/reviews/`;
+- `http://127.0.0.1:8000/reviews/1/`;
+- `http://127.0.0.1:8000/movies/999/`.
+
+Пользовательская страница 404 на произвольном адресе, например
+`/nonexistent/`, видна при `DEBUG = False` в `filmreviews/settings.py`.
+После проверки верните значение `True`.
+
 ## Что реализовано
 
 - коллекции объектов фильмов, пользователей и отзывов;
@@ -71,12 +116,21 @@ Film_review_system/
 │   ├── movies.json
 │   ├── reviews.json
 │   └── users.json
+├── filmreviews/
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   └── wsgi.py
+├── homepage/
+├── catalog/
+├── reviews/
 ├── tests/
 │   ├── test_models.py
 │   ├── test_services.py
 │   └── test_storage.py
 ├── main.py
-├── models.py
+├── manage.py
+├── models/
 ├── services.py
 ├── storage.py
 ├── requirements.txt
