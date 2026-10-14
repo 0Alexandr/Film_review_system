@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Отзывы – КиноОтзыв{% endblock %}
+
+{% block content %}
+  <h1>Отзывы</h1>
+  <p class="text-muted">Всего отзывов: {{ reviews|length }}</p>
+
+  <table class="table table-striped bg-white review-table">
+    <thead>
+      <tr>
+        <th>Номер</th>
+        <th>Фильм</th>
+        <th>Автор</th>
+        <th>Оценка</th>
+        <th>Дата</th>
+        <th>Вердикт</th>
+        <th>Текст</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for review in reviews %}
+        <tr>
+          <td><a href="{% url 'reviews:detail' review.review_id %}">№{{ review.review_id }}</a></td>
+          <td><a href="{% url 'catalog:detail' review.movie_id %}">{{ review.movie.title }}</a></td>
+          <td>{{ review.user.name|default:"Аноним" }}</td>
+          <td>{{ review.rating }}/10</td>
+          <td>{{ review.publication_date|date:"d.m.Y" }}</td>
+          <td>{% include "reviews/includes/review_verdict.html" %}</td>
+          <td>{{ review.text|truncatechars:40 }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="7">Отзывы не найдены.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

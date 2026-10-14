@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if movie %}{{ movie.title }} – КиноОтзыв{% else %}Фильм не найден – КиноОтзыв{% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if movie %}
+    <div class="card movie-card">
+      <div class="card-body">
+        <h1 class="card-title">{{ movie.title }}</h1>
+        <dl class="row mb-0">
+          <dt class="col-sm-3">Год</dt>
+          <dd class="col-sm-9">{{ movie.year }}</dd>
+          <dt class="col-sm-3">Жанр</dt>
+          <dd class="col-sm-9">{{ movie.genre }}</dd>
+          <dt class="col-sm-3">Режиссёр</dt>
+          <dd class="col-sm-9">{{ movie.director }}</dd>
+          <dt class="col-sm-3">Средняя оценка</dt>
+          <dd class="col-sm-9">
+            {% if movie.reviews %}{{ movie.average_rating }}/10{% else %}нет оценок{% endif %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+
+    <h2 class="h4 mt-4">Отзывы ({{ movie.reviews|length }})</h2>
+    <ul class="list-group">
+      {% for review in movie.reviews %}
+        <li class="list-group-item">
+          <a href="{% url 'reviews:detail' review.review_id %}">Отзыв №{{ review.review_id }}</a>:
+          {{ review.rating }}/10, {{ review.user.name }}
+          {% include "reviews/includes/review_verdict.html" %}
+        </li>
+      {% empty %}
+        <li class="list-group-item">Отзывов пока нет.</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <h1 class="text-danger">Фильм не найден</h1>
+    <p>Фильм с указанным идентификатором отсутствует в каталоге.</p>
+  {% endif %}
+
+  <a href="{% url 'catalog:list' %}" class="btn btn-outline-secondary mt-3">
+    ← к списку фильмов
+  </a>
+{% endblock %}

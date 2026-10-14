@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Фильмы – КиноОтзыв{% endblock %}
+
+{% block content %}
+  <h1>Каталог фильмов</h1>
+  <p class="text-muted">Всего фильмов: {{ movies|length }}</p>
+
+  <div class="row g-3">
+    {% for movie in movies %}
+      <div class="col-md-6 col-lg-4">
+        {% include "catalog/includes/movie_card.html" %}
+      </div>
+    {% empty %}
+      <p>Фильмы не найдены.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

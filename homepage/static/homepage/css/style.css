@@ -1,0 +1,73 @@
+/* Собственные стили проекта «КиноОтзыв» (дополняют Bootstrap). */
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
+.site-logo {
+  width: 32px;
+  height: 32px;
+}
+
+.site-header .nav-link.active {
+  color: #ffc107;
+  font-weight: 600;
+}
+
+.stat-card {
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-left: 4px solid #ffc107;
+  border-radius: 8px;
+}
+
+.stat-card__label {
+  color: #6c757d;
+}
+
+.stat-card__value {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.movie-card,
+.review-card {
+  border-radius: 10px;
+  transition: box-shadow 0.2s ease;
+}
+
+.movie-card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
+}
+
+.movie-rating {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #d39e00;
+}
+
+.review-verdict {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.review-text {
+  margin: 0;
+  padding-left: 1rem;
+  border-left: 3px solid #ffc107;
+  font-size: 1.15rem;
+  font-style: italic;
+}
+
+.site-footer {
+  padding: 1rem 0;
+  color: #6c757d;
+  border-top: 1px solid #dee2e6;
+}

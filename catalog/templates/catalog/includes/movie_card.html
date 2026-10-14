@@ -1,0 +1,19 @@
+<article class="card movie-card h-100">
+  <div class="card-body">
+    <h2 class="card-title h5">{{ movie.title|default:"Без названия" }}</h2>
+    <p class="card-text text-muted mb-2">
+      {{ movie.year }} · {{ movie.genre }} · {{ movie.director }}
+    </p>
+    <p class="card-text">
+      {% if movie.reviews %}
+        <span class="movie-rating">{{ movie.average_rating }}/10</span>
+        <span class="text-muted">(отзывов: {{ movie.reviews|length }})</span>
+      {% else %}
+        <span class="text-muted">Оценок пока нет</span>
+      {% endif %}
+    </p>
+    <a href="{% url 'catalog:detail' movie.movie_id %}" class="btn btn-primary btn-sm">
+      Подробнее
+    </a>
+  </div>
+</article>

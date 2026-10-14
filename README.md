@@ -2,28 +2,80 @@
 
 КиноОтзыв - Python-проект для хранения фильмов, пользователей, оценок и текстовых отзывов.
 
-## Практическая работа 5: Django
+## Используемые технологии
 
-В проект добавлена Django-часть без удаления кода предыдущей практической
-работы. Django использует существующие JSON-файлы и классы проекта.
+Python 3, Django 5.2, Django Template Language (DTL), HTML5, CSS3,
+JavaScript, Bootstrap 5.3, JSON для хранения данных, Git, pytest, flake8.
 
-Что добавлено:
+## Веб-интерфейс (Django)
 
-- Django-проект `filmreviews`;
-- приложение `homepage` с главной страницей `/` и пользовательской 404;
-- приложение `catalog` со страницами `/movies/` и `/movies/<id>/`;
-- приложение `reviews` со страницами `/reviews/` и `/reviews/<id>/`;
-- тесты страниц в `tests.py` каждого Django-приложения;
-- функции `find_movie_by_id()` и `find_review_by_id()` в `services.py`.
+Django-проект `filmreviews` и три приложения:
 
-Настройки Django:
+| Приложение | URL | Имя маршрута | Шаблон |
+|---|---|---|---|
+| `homepage` | `/` | `homepage:index` | `homepage/index.html` |
+| `catalog` | `/movies/` | `catalog:list` | `catalog/movie_list.html` |
+| `catalog` | `/movies/<int:movie_id>/` | `catalog:detail` | `catalog/movie_detail.html` |
+| `reviews` | `/reviews/` | `reviews:list` | `reviews/review_list.html` |
+| `reviews` | `/reviews/<int:review_id>/` | `reviews:detail` | `reviews/review_detail.html` |
 
-- язык: `ru-RU`;
-- часовой пояс: `Europe/Moscow`;
-- `ALLOWED_HOSTS`: `127.0.0.1`, `localhost`, `testserver`;
-- подключен обработчик `handler404`.
+Страницы формируются Django-шаблонами. Представления только загружают данные
+через `load_system()`, подготавливают словарь `context` и вызывают
+`render()`. Функция `page()` из ПР5, собиравшая HTML в Python, удалена.
 
-Запуск Django-проекта:
+Для несуществующих фильма или отзыва шаблон показывает сообщение
+«не найден» через `{% if %}`, а `render()` возвращает статус `404`.
+Для неизвестных адресов подключен `handler404` с шаблоном `templates/404.html`
+(виден при `DEBUG = False`).
+
+## Django Template Language
+
+- **Базовый шаблон** `templates/base.html`: `<head>`, Bootstrap, собственный
+  CSS, навигация, контейнер страницы, подвал, подключение JavaScript.
+  Блоки `{% block title %}` и `{% block content %}` переопределяются
+  дочерними шаблонами через `{% extends "base.html" %}`.
+- **Включаемые шаблоны** (`{% include %}`):
+  - `templates/includes/navigation.html` – меню сайта;
+  - `catalog/includes/movie_card.html` – карточка фильма;
+  - `reviews/includes/review_verdict.html` – вердикт отзыва
+    («Рекомендует» / «Не рекомендует»), используется на трех страницах.
+- **Контекст**: например, `{"movies": ...}` в `movie_list()` и
+  `{% for movie in movies %}` в шаблоне.
+- **Циклы и условия**: `{% for %}` с `{% empty %}` для пустых списков,
+  `{% if review.recommended %}`, `{% if movie.reviews %}`, `{% if movie %}`.
+- **Фильтры**: `length` (количество фильмов и отзывов), `default`
+  (название фильма, имя автора), `date:"d.m.Y"` (дата отзыва),
+  `truncatechars:40` (краткий текст в таблице), `floatformat:1`
+  (средняя оценка). Фильтры только форматируют данные, бизнес-логика
+  остается в `models/` и `services.py`.
+
+## URL-маршрутизация
+
+В каждом `urls.py` приложения задан `app_name`, поэтому маршруты имеют вид
+`homepage:index`, `catalog:list`, `catalog:detail`, `reviews:list`,
+`reviews:detail`. Ссылки в шаблонах строятся тегом `{% url %}`, например
+`{% url 'catalog:detail' movie.movie_id %}`, жестко заданных адресов нет.
+
+## Статические файлы
+
+Каталог `homepage/static/homepage/`:
+
+- `css/style.css` – собственное оформление: карточки статистики и фильмов,
+  рейтинг, вердикт отзыва, цитата отзыва, логотип, подвал;
+- `js/main.js` – выводит текущий год в подвале и подсвечивает пункт меню
+  текущего раздела;
+- `img/logo.svg` – логотип в навигации.
+
+Подключение: `{% load static %}` и `{% static 'homepage/css/style.css' %}`.
+Проверка: `python manage.py findstatic homepage/img/logo.svg`.
+
+## Хранение данных
+
+Данные по-прежнему хранятся в JSON (`data/`), объекты создаются классами из
+`models/`. Django ORM, база данных и формы на текущем этапе не используются –
+это задачи следующих практических работ.
+
+## Запуск Django-проекта
 
 ```bash
 .\venv\Scripts\Activate.ps1
@@ -42,10 +94,6 @@ python manage.py runserver
 - `http://127.0.0.1:8000/reviews/`;
 - `http://127.0.0.1:8000/reviews/1/`;
 - `http://127.0.0.1:8000/movies/999/`.
-
-Пользовательская страница 404 на произвольном адресе, например
-`/nonexistent/`, видна при `DEBUG = False` в `filmreviews/settings.py`.
-После проверки верните значение `True`.
 
 ## Что реализовано
 
@@ -121,9 +169,33 @@ Film_review_system/
 │   ├── urls.py
 │   ├── asgi.py
 │   └── wsgi.py
+├── templates/
+│   ├── includes/
+│   │   └── navigation.html
+│   ├── 404.html
+│   └── base.html
 ├── homepage/
+│   ├── static/homepage/
+│   │   ├── css/style.css
+│   │   ├── img/logo.svg
+│   │   └── js/main.js
+│   ├── templates/homepage/index.html
+│   ├── urls.py
+│   └── views.py
 ├── catalog/
+│   ├── templates/catalog/
+│   │   ├── includes/movie_card.html
+│   │   ├── movie_detail.html
+│   │   └── movie_list.html
+│   ├── urls.py
+│   └── views.py
 ├── reviews/
+│   ├── templates/reviews/
+│   │   ├── includes/review_verdict.html
+│   │   ├── review_detail.html
+│   │   └── review_list.html
+│   ├── urls.py
+│   └── views.py
 ├── tests/
 │   ├── test_models.py
 │   ├── test_services.py
@@ -186,3 +258,8 @@ py -m venv venv
 ```bash
 .\venv\Scripts\python.exe -m flake8 .
 ```
+
+## Дальнейшее развитие
+
+Перевод хранения данных из JSON в базу данных и Django ORM, формы Django,
+создание и редактирование фильмов и отзывов через веб-интерфейс.

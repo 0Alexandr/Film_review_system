@@ -25,5 +25,14 @@
     "text": "Стильный киберпанк, который до сих пор смотрится свежо.",
     "publication_date": "2026-09-22",
     "recommended": true
+  },
+  {
+    "review_id": 4,
+    "movie_id": 3,
+    "user_id": 2,
+    "rating": 5,
+    "text": "Визуально эффектно, но философская часть показалась затянутой.",
+    "publication_date": "2026-10-01",
+    "recommended": false
   }
 ]

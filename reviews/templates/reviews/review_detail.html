@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if review %}Отзыв №{{ review.review_id }} – КиноОтзыв{% else %}Отзыв не найден – КиноОтзыв{% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if review %}
+    <div class="card review-card">
+      <div class="card-body">
+        <h1 class="card-title">Отзыв №{{ review.review_id }}</h1>
+        <dl class="row">
+          <dt class="col-sm-3">Фильм</dt>
+          <dd class="col-sm-9">
+            <a href="{% url 'catalog:detail' review.movie_id %}">{{ review.movie.title }}</a>
+          </dd>
+          <dt class="col-sm-3">Автор</dt>
+          <dd class="col-sm-9">{{ review.user.name|default:"Аноним" }}</dd>
+          <dt class="col-sm-3">Оценка</dt>
+          <dd class="col-sm-9">{{ review.rating }}/10</dd>
+          <dt class="col-sm-3">Дата</dt>
+          <dd class="col-sm-9">{{ review.publication_date|date:"d.m.Y" }}</dd>
+          <dt class="col-sm-3">Вердикт</dt>
+          <dd class="col-sm-9">{% include "reviews/includes/review_verdict.html" %}</dd>
+        </dl>
+        <blockquote class="review-text">{{ review.text }}</blockquote>
+      </div>
+    </div>
+  {% else %}
+    <h1 class="text-danger">Отзыв не найден</h1>
+    <p>Отзыв с указанным идентификатором отсутствует.</p>
+  {% endif %}
+
+  <a href="{% url 'reviews:list' %}" class="btn btn-outline-secondary mt-3">
+    ← к списку отзывов
+  </a>
+{% endblock %}
