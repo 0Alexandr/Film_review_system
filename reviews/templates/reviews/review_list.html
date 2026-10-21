@@ -8,7 +8,7 @@
   <div class="btn-group mb-3" role="group" aria-label="Фильтр по вердикту">
     {% for value, label in verdict_filters.items %}
       <a href="{% url 'reviews:list' %}{% if value %}?recommended={{ value }}{% endif %}"
-         class="btn btn-sm {% if value == recommended %}btn-dark{% else %}btn-outline-dark{% endif %}">
+         class="btn btn-sm btn-film{% if value == recommended %} active{% endif %}">
         {{ label }}
       </a>
     {% endfor %}

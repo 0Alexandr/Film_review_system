@@ -5,7 +5,7 @@
 {% block content %}
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
     <h1 class="mb-0">Каталог фильмов</h1>
-    <a href="{% url 'catalog:search' %}" class="btn btn-outline-primary">Найти фильм</a>
+    <a href="{% url 'catalog:search' %}" class="btn btn-film">Найти фильм</a>
   </div>
   <p class="text-muted">Всего фильмов: {{ movies|length }}</p>
 

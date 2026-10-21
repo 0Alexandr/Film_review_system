@@ -28,7 +28,7 @@
              value="{{ min_rating|floatformat:"-1" }}" class="form-control">
     </div>
     <div class="col-md-2">
-      <button type="submit" class="btn btn-primary w-100">Найти</button>
+      <button type="submit" class="btn btn-film w-100">Найти</button>
     </div>
   </form>
 
@@ -47,7 +47,7 @@
     <p class="text-muted">Задайте условия и нажмите «Найти».</p>
   {% endif %}
 
-  <a href="{% url 'catalog:list' %}" class="btn btn-outline-secondary mt-3">
+  <a href="{% url 'catalog:list' %}" class="btn btn-film mt-3">
     ← к списку фильмов
   </a>
 {% endblock %}

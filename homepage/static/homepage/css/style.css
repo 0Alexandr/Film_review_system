@@ -69,5 +69,26 @@ main {
 .site-footer {
   padding: 1rem 0;
   color: #6c757d;
+  text-align: center;
   border-top: 1px solid #dee2e6;
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+/* Единый стиль кнопок: белая с жёлтой рамкой, при наведении и нажатии –
+   жёлтая заливка. Выбранный фильтр (.active) тоже закрашен жёлтым. */
+.btn-film {
+  --bs-btn-color: #212529;
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: #ffc107;
+  --bs-btn-hover-color: #212529;
+  --bs-btn-hover-bg: #ffc107;
+  --bs-btn-hover-border-color: #ffc107;
+  --bs-btn-active-color: #212529;
+  --bs-btn-active-bg: #ffc107;
+  --bs-btn-active-border-color: #e0a800;
+  --bs-btn-focus-shadow-rgb: 255, 193, 7;
+  font-weight: 500;
 }
