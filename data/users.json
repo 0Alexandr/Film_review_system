@@ -8,5 +8,10 @@
     "user_id": 2,
     "name": "Марина",
     "registration_date": "2026-09-22"
+  },
+  {
+    "user_id": 3,
+    "name": "Иван",
+    "registration_date": "2026-10-05"
   }
 ]

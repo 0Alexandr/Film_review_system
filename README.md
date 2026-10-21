@@ -5,7 +5,8 @@
 ## Используемые технологии
 
 Python 3, Django 5.2, Django Template Language (DTL), HTML5, CSS3,
-JavaScript, Bootstrap 5.3, JSON для хранения данных, Git, pytest, flake8.
+JavaScript, Bootstrap 5.3, SQLite и модуль `sqlite3`, SQL, JSON (исходные
+данные), Git, pytest, flake8.
 
 ## Веб-интерфейс (Django)
 
@@ -15,13 +16,14 @@ Django-проект `filmreviews` и три приложения:
 |---|---|---|---|
 | `homepage` | `/` | `homepage:index` | `homepage/index.html` |
 | `catalog` | `/movies/` | `catalog:list` | `catalog/movie_list.html` |
+| `catalog` | `/movies/search/` | `catalog:search` | `catalog/movie_search.html` |
 | `catalog` | `/movies/<int:movie_id>/` | `catalog:detail` | `catalog/movie_detail.html` |
 | `reviews` | `/reviews/` | `reviews:list` | `reviews/review_list.html` |
+| `reviews` | `/reviews/statistics/` | `reviews:statistics` | `reviews/statistics.html` |
 | `reviews` | `/reviews/<int:review_id>/` | `reviews:detail` | `reviews/review_detail.html` |
 
-Страницы формируются Django-шаблонами. Представления только загружают данные
-через `load_system()`, подготавливают словарь `context` и вызывают
-`render()`. Функция `page()` из ПР5, собиравшая HTML в Python, удалена.
+Страницы формируются Django-шаблонами. Представления выполняют SQL-запросы
+к базе SQLite, передают результат в словарь `context` и вызывают `render()`.
 
 Для несуществующих фильма или отзыва шаблон показывает сообщение
 «не найден» через `{% if %}`, а `render()` возвращает статус `404`.
@@ -42,19 +44,18 @@ Django-проект `filmreviews` и три приложения:
 - **Контекст**: например, `{"movies": ...}` в `movie_list()` и
   `{% for movie in movies %}` в шаблоне.
 - **Циклы и условия**: `{% for %}` с `{% empty %}` для пустых списков,
-  `{% if review.recommended %}`, `{% if movie.reviews %}`, `{% if movie %}`.
+  `{% if review.recommended %}`, `{% if movie.reviews_count %}`, `{% if movie %}`.
 - **Фильтры**: `length` (количество фильмов и отзывов), `default`
-  (название фильма, имя автора), `date:"d.m.Y"` (дата отзыва),
-  `truncatechars:40` (краткий текст в таблице), `floatformat:1`
-  (средняя оценка). Фильтры только форматируют данные, бизнес-логика
-  остается в `models/` и `services.py`.
+  (режиссёр, имя автора, текст отзыва), `truncatechars:40` (краткий текст
+  в таблице), `floatformat:1` (средняя оценка). Дата отзыва форматируется
+  в SQL функцией `strftime('%d.%m.%Y', ...)`.
 
 ## URL-маршрутизация
 
 В каждом `urls.py` приложения задан `app_name`, поэтому маршруты имеют вид
-`homepage:index`, `catalog:list`, `catalog:detail`, `reviews:list`,
-`reviews:detail`. Ссылки в шаблонах строятся тегом `{% url %}`, например
-`{% url 'catalog:detail' movie.movie_id %}`, жестко заданных адресов нет.
+`homepage:index`, `catalog:list`, `catalog:search`, `catalog:detail`,
+`reviews:list`, `reviews:statistics`, `reviews:detail`. Ссылки в шаблонах строятся тегом `{% url %}`, например
+`{% url 'catalog:detail' movie.id %}`, жестко заданных адресов нет.
 
 ## Статические файлы
 
@@ -69,18 +70,82 @@ Django-проект `filmreviews` и три приложения:
 Подключение: `{% load static %}` и `{% static 'homepage/css/style.css' %}`.
 Проверка: `python manage.py findstatic homepage/img/logo.svg`.
 
-## Хранение данных
+## База данных SQLite (ПР7)
 
-Данные по-прежнему хранятся в JSON (`data/`), объекты создаются классами из
-`models/`. Django ORM, база данных и формы на текущем этапе не используются –
-это задачи следующих практических работ.
+На ПР7 данные проекта перенесены из JSON в базу SQLite `data/filmreviews.sqlite`.
+Работа с базой выполняется напрямую через SQL и модуль `sqlite3`,
+Django ORM пока не используется.
+
+### Структура базы
+
+| Таблица | Поле | Тип | Ограничения |
+|---|---|---|---|
+| `movies` | `id` | INTEGER | PRIMARY KEY |
+| | `title` | TEXT | NOT NULL |
+| | `year` | INTEGER | NOT NULL |
+| | `genre` | TEXT | NOT NULL |
+| | `director` | TEXT | может быть NULL |
+| `users` | `id` | INTEGER | PRIMARY KEY |
+| | `name` | TEXT | NOT NULL |
+| | `registration_date` | TEXT | NOT NULL, `YYYY-MM-DD` |
+| `reviews` | `id` | INTEGER | PRIMARY KEY |
+| | `movie_id` | INTEGER | NOT NULL, FOREIGN KEY → `movies.id` |
+| | `user_id` | INTEGER | NOT NULL, FOREIGN KEY → `users.id` |
+| | `rating` | INTEGER | NOT NULL, CHECK 1–10 |
+| | `text` | TEXT | может быть NULL (оценка без текста) |
+| | `publication_date` | TEXT | NOT NULL, `YYYY-MM-DD` |
+| | `recommended` | INTEGER | NOT NULL, 0/1, DEFAULT 1 |
+
+Связи: один фильм – много отзывов, один пользователь – много отзывов.
+
+### Файлы слоя базы данных
+
+- `sql/schema.sql` – команды `CREATE TABLE IF NOT EXISTS` с первичными и
+  внешними ключами;
+- `sql/queries.sql` – 18 проверенных SQL-запросов с комментариями: списки,
+  `WHERE` (`=`, `BETWEEN`, `LIKE`, `IS NULL`), `JOIN`, `LEFT JOIN`,
+  `COUNT/AVG/MIN/MAX/SUM`, `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT/OFFSET`;
+- `db/database.py` – `get_connection()` (`PRAGMA foreign_keys = ON`,
+  `row_factory = sqlite3.Row`), `fetch_all()` и `fetch_one()`;
+- `db/import_json.py` – перенос данных из JSON: создаёт схему, очищает таблицы,
+  вставляет записи `executemany()` в порядке `movies` → `users` → `reviews`,
+  при ошибке выполняет `rollback()`;
+- `db/run_queries.py` – выполняет все запросы из `queries.sql` и печатает
+  результаты (проверка запросов без отдельного SQLite CLI).
+
+Создание базы и проверка запросов:
+
+```bash
+python -m db.import_json
+python -m db.run_queries
+```
+
+### Страницы, получающие данные из SQLite
+
+| Страница | Что выполняется в SQL |
+|---|---|
+| `/` | `COUNT`, `AVG`, лучшие фильмы (`JOIN` + `GROUP BY` + `LIMIT ?`), последние отзывы (`JOIN` + `ORDER BY` + `LIMIT ?`) |
+| `/movies/` | рейтинг фильмов: `LEFT JOIN` + `COUNT` + `AVG` + `GROUP BY` |
+| `/movies/<id>/` | фильм `WHERE movies.id = ?`, отзывы фильма `JOIN users` |
+| `/movies/search/` | поиск по жанру, части названия (`LIKE`) и минимальной оценке (`HAVING`) |
+| `/reviews/` | отзывы `JOIN movies JOIN users`, фильтр по вердикту `WHERE` |
+| `/reviews/<id>/` | один отзыв `WHERE reviews.id = ?` |
+| `/reviews/statistics/` | итоги `COUNT/AVG/MIN/MAX/SUM`, `GROUP BY` по жанрам и пользователям, фильмы с порогом отзывов `HAVING COUNT(...) >= ?` |
+
+Все значения от пользователя (id, жанр, строка поиска, пороги) передаются
+в запросы параметрами `?`; конкатенация и f-строки для подстановки значений
+не используются.
+
+JSON-файлы `data/*.json` сохранены: это исходные данные для импорта и данные
+консольной версии `main.py` (классы `models/`, модуль `storage.py`).
+Django ORM, модели Django и формы на текущем этапе не используются.
 
 ## Запуск Django-проекта
 
 ```bash
 .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-python manage.py migrate
+python -m db.import_json
 python manage.py check
 python manage.py test
 python manage.py runserver
@@ -91,8 +156,10 @@ python manage.py runserver
 - `http://127.0.0.1:8000/`;
 - `http://127.0.0.1:8000/movies/`;
 - `http://127.0.0.1:8000/movies/1/`;
+- `http://127.0.0.1:8000/movies/search/`;
 - `http://127.0.0.1:8000/reviews/`;
 - `http://127.0.0.1:8000/reviews/1/`;
+- `http://127.0.0.1:8000/reviews/statistics/`;
 - `http://127.0.0.1:8000/movies/999/`.
 
 ## Что реализовано
@@ -161,9 +228,19 @@ python manage.py runserver
 ```text
 Film_review_system/
 ├── data/
+│   ├── filmreviews.sqlite
 │   ├── movies.json
 │   ├── reviews.json
 │   └── users.json
+├── db/
+│   ├── __init__.py
+│   ├── database.py
+│   ├── import_json.py
+│   ├── run_queries.py
+│   └── testing.py
+├── sql/
+│   ├── queries.sql
+│   └── schema.sql
 ├── filmreviews/
 │   ├── settings.py
 │   ├── urls.py
@@ -186,17 +263,20 @@ Film_review_system/
 │   ├── templates/catalog/
 │   │   ├── includes/movie_card.html
 │   │   ├── movie_detail.html
-│   │   └── movie_list.html
+│   │   ├── movie_list.html
+│   │   └── movie_search.html
 │   ├── urls.py
 │   └── views.py
 ├── reviews/
 │   ├── templates/reviews/
 │   │   ├── includes/review_verdict.html
 │   │   ├── review_detail.html
-│   │   └── review_list.html
+│   │   ├── review_list.html
+│   │   └── statistics.html
 │   ├── urls.py
 │   └── views.py
 ├── tests/
+│   ├── test_database.py
 │   ├── test_models.py
 │   ├── test_services.py
 │   └── test_storage.py
@@ -250,8 +330,14 @@ py -m venv venv
 Запуск тестов:
 
 ```bash
-.\venv\Scripts\python.exe -m pytest
+.\venv\Scripts\python.exe -m pytest -v
+.\venv\Scripts\python.exe manage.py test
 ```
+
+`tests/test_database.py` проверяет схему, внешние ключи, ограничение
+`CHECK`, полноту импорта из JSON и выполнение всех запросов из
+`sql/queries.sql`. Django-тесты (`tests.py` приложений) работают на
+временной копии базы, созданной из JSON (`db/testing.py`).
 
 Проверка стиля:
 
@@ -261,5 +347,6 @@ py -m venv venv
 
 ## Дальнейшее развитие
 
-Перевод хранения данных из JSON в базу данных и Django ORM, формы Django,
-создание и редактирование фильмов и отзывов через веб-интерфейс.
+Подключение базы данных к Django через модели и Django ORM, миграции,
+административная панель, формы Django для создания и редактирования
+фильмов и отзывов.

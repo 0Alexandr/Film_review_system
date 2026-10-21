@@ -10,27 +10,29 @@
   </p>
   <p>
     <a href="{% url 'catalog:list' %}" class="btn btn-primary me-2">Фильмы</a>
-    <a href="{% url 'reviews:list' %}" class="btn btn-secondary">Отзывы</a>
+    <a href="{% url 'catalog:search' %}" class="btn btn-outline-primary me-2">Поиск фильмов</a>
+    <a href="{% url 'reviews:list' %}" class="btn btn-secondary me-2">Отзывы</a>
+    <a href="{% url 'reviews:statistics' %}" class="btn btn-outline-secondary">Статистика</a>
   </p>
 
   <div class="row g-3 mb-4">
     <div class="col-md-4">
       <div class="stat-card">
         <div class="stat-card__label">Фильмов</div>
-        <div class="stat-card__value">{{ statistics.movies }}</div>
+        <div class="stat-card__value">{{ statistics.movies_count }}</div>
       </div>
     </div>
     <div class="col-md-4">
       <div class="stat-card">
         <div class="stat-card__label">С отзывами</div>
-        <div class="stat-card__value">{{ statistics.rated_movies }}</div>
+        <div class="stat-card__value">{{ statistics.rated_movies_count }}</div>
       </div>
     </div>
     <div class="col-md-4">
       <div class="stat-card">
         <div class="stat-card__label">Средняя оценка</div>
         <div class="stat-card__value">
-          {{ statistics.average_rating|floatformat:1 }}/10
+          {{ statistics.average_rating|default:0|floatformat:1 }}/10
         </div>
       </div>
     </div>
@@ -42,11 +44,11 @@
       <ul>
         {% for movie in top_movies %}
           <li>
-            <a href="{% url 'catalog:detail' movie.movie_id %}">{{ movie.title }}</a>
-            – {{ movie.average_rating }}/10
+            <a href="{% url 'catalog:detail' movie.id %}">{{ movie.title }}</a>
+            – {{ movie.average_rating|floatformat:1 }}/10
           </li>
         {% empty %}
-          <li>Фильмов пока нет.</li>
+          <li>Фильмов с оценками пока нет.</li>
         {% endfor %}
       </ul>
     </section>
@@ -55,8 +57,8 @@
       <ul>
         {% for review in latest_reviews %}
           <li>
-            <a href="{% url 'reviews:detail' review.review_id %}">Отзыв №{{ review.review_id }}</a>
-            на фильм «{{ review.movie.title }}»
+            <a href="{% url 'reviews:detail' review.id %}">Отзыв №{{ review.id }}</a>
+            на фильм «{{ review.movie_title }}», {{ review.user_name }} – {{ review.rating }}/10
           </li>
         {% empty %}
           <li>Отзывов пока нет.</li>

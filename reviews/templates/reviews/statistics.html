@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика – КиноОтзыв{% endblock %}
+
+{% block content %}
+  <h1>Статистика отзывов</h1>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-card__label">Отзывов</div>
+        <div class="stat-card__value">{{ totals.reviews_count }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-card__label">Средняя оценка</div>
+        <div class="stat-card__value">{{ totals.average_rating|default:0|floatformat:1 }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-card__label">Мин. / макс. оценка</div>
+        <div class="stat-card__value">{{ totals.min_rating|default:"–" }} / {{ totals.max_rating|default:"–" }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-card__label">Рекомендаций</div>
+        <div class="stat-card__value">{{ totals.recommended_count|default:0 }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <section class="col-lg-6">
+      <h2 class="h4">По жанрам</h2>
+      <table class="table table-sm bg-white">
+        <thead>
+          <tr><th>Жанр</th><th>Фильмов</th><th>Отзывов</th><th>Средняя оценка</th></tr>
+        </thead>
+        <tbody>
+          {% for item in genres %}
+            <tr>
+              <td>{{ item.genre }}</td>
+              <td>{{ item.movies_count }}</td>
+              <td>{{ item.reviews_count }}</td>
+              <td>{{ item.average_rating|default:"–" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4">Данные отсутствуют.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="col-lg-6">
+      <h2 class="h4">По пользователям</h2>
+      <table class="table table-sm bg-white">
+        <thead>
+          <tr><th>Пользователь</th><th>Отзывов</th><th>Средняя оценка</th><th>Рекомендаций</th></tr>
+        </thead>
+        <tbody>
+          {% for item in users %}
+            <tr>
+              <td>{{ item.user_name }}</td>
+              <td>{{ item.reviews_count }}</td>
+              <td>{{ item.average_rating|default:"–" }}</td>
+              <td>{{ item.recommended_count|default:0 }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4">Данные отсутствуют.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <section class="mt-3">
+    <h2 class="h4">Обсуждаемые фильмы</h2>
+    <form method="get" class="row g-2 align-items-end mb-3">
+      <div class="col-auto">
+        <label for="min_reviews" class="form-label">Отзывов не меньше</label>
+        <input type="number" id="min_reviews" name="min_reviews" min="1"
+               value="{{ min_reviews }}" class="form-control">
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Показать</button>
+      </div>
+    </form>
+    <ul class="list-group">
+      {% for movie in popular_movies %}
+        <li class="list-group-item">
+          <a href="{% url 'catalog:detail' movie.id %}">{{ movie.title }}</a>:
+          отзывов – {{ movie.reviews_count }}, средняя оценка – {{ movie.average_rating|floatformat:1 }}
+        </li>
+      {% empty %}
+        <li class="list-group-item">Фильмов с таким числом отзывов нет.</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

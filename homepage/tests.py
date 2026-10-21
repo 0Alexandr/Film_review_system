@@ -1,8 +1,9 @@
-from django.test import TestCase
 from django.urls import reverse
 
+from db.testing import TemporaryDatabaseTestCase
 
-class HomepageTests(TestCase):
+
+class HomepageTests(TemporaryDatabaseTestCase):
     def test_homepage_opens(self) -> None:
         response = self.client.get(reverse("homepage:index"))
 
@@ -11,7 +12,17 @@ class HomepageTests(TestCase):
         self.assertTemplateUsed(response, "base.html")
         self.assertTemplateUsed(response, "includes/navigation.html")
         self.assertContains(response, "КиноОтзыв")
-        self.assertIn("statistics", response.context)
+
+    def test_homepage_uses_sqlite_data(self) -> None:
+        response = self.client.get(reverse("homepage:index"))
+
+        self.assertEqual(response.context["statistics"]["movies_count"], 5)
+        self.assertEqual(len(response.context["top_movies"]), 3)
+        self.assertEqual(
+            response.context["top_movies"][0]["title"],
+            "Интерстеллар",
+        )
+        self.assertEqual(len(response.context["latest_reviews"]), 5)
 
     def test_static_files_are_linked(self) -> None:
         response = self.client.get(reverse("homepage:index"))

@@ -4,7 +4,16 @@
 
 {% block content %}
   <h1>Отзывы</h1>
-  <p class="text-muted">Всего отзывов: {{ reviews|length }}</p>
+
+  <div class="btn-group mb-3" role="group" aria-label="Фильтр по вердикту">
+    {% for value, label in verdict_filters.items %}
+      <a href="{% url 'reviews:list' %}{% if value %}?recommended={{ value }}{% endif %}"
+         class="btn btn-sm {% if value == recommended %}btn-dark{% else %}btn-outline-dark{% endif %}">
+        {{ label }}
+      </a>
+    {% endfor %}
+  </div>
+  <p class="text-muted">Показано отзывов: {{ reviews|length }}</p>
 
   <table class="table table-striped bg-white review-table">
     <thead>
@@ -21,13 +30,13 @@
     <tbody>
       {% for review in reviews %}
         <tr>
-          <td><a href="{% url 'reviews:detail' review.review_id %}">№{{ review.review_id }}</a></td>
-          <td><a href="{% url 'catalog:detail' review.movie_id %}">{{ review.movie.title }}</a></td>
-          <td>{{ review.user.name|default:"Аноним" }}</td>
+          <td><a href="{% url 'reviews:detail' review.id %}">№{{ review.id }}</a></td>
+          <td><a href="{% url 'catalog:detail' review.movie_id %}">{{ review.movie_title }}</a></td>
+          <td>{{ review.user_name|default:"Аноним" }}</td>
           <td>{{ review.rating }}/10</td>
-          <td>{{ review.publication_date|date:"d.m.Y" }}</td>
+          <td>{{ review.publication_date }}</td>
           <td>{% include "reviews/includes/review_verdict.html" %}</td>
-          <td>{{ review.text|truncatechars:40 }}</td>
+          <td>{{ review.text|default:"—"|truncatechars:40 }}</td>
         </tr>
       {% empty %}
         <tr>

@@ -15,21 +15,21 @@
           <dt class="col-sm-3">Жанр</dt>
           <dd class="col-sm-9">{{ movie.genre }}</dd>
           <dt class="col-sm-3">Режиссёр</dt>
-          <dd class="col-sm-9">{{ movie.director }}</dd>
+          <dd class="col-sm-9">{{ movie.director|default:"не указан" }}</dd>
           <dt class="col-sm-3">Средняя оценка</dt>
           <dd class="col-sm-9">
-            {% if movie.reviews %}{{ movie.average_rating }}/10{% else %}нет оценок{% endif %}
+            {% if movie.reviews_count %}{{ movie.average_rating|floatformat:1 }}/10{% else %}нет оценок{% endif %}
           </dd>
         </dl>
       </div>
     </div>
 
-    <h2 class="h4 mt-4">Отзывы ({{ movie.reviews|length }})</h2>
+    <h2 class="h4 mt-4">Отзывы ({{ reviews|length }})</h2>
     <ul class="list-group">
-      {% for review in movie.reviews %}
+      {% for review in reviews %}
         <li class="list-group-item">
-          <a href="{% url 'reviews:detail' review.review_id %}">Отзыв №{{ review.review_id }}</a>:
-          {{ review.rating }}/10, {{ review.user.name }}
+          <a href="{% url 'reviews:detail' review.id %}">Отзыв №{{ review.id }}</a>:
+          {{ review.rating }}/10, {{ review.user_name }}
           {% include "reviews/includes/review_verdict.html" %}
         </li>
       {% empty %}
